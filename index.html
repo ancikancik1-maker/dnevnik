@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0e14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Дневник группы 10604226</title>
+<style>
+  :root {
+    --bg:#0b0e14; --surface:#121722; --surface-2:#1a2130; --surface-3:#212a3d;
+    --border:rgba(255,255,255,0.07); --border-strong:rgba(255,255,255,0.14);
+    --text:#e8ecf4; --text-dim:#8b94a7; --text-faint:#5c6578;
+    --accent:#6366f1; --grad:linear-gradient(135deg,#6366f1,#22d3ee);
+    --danger:#ef4444; --success:#34d399;
+    --t-lab:#a855f7; --t-prac:#3b82f6; --t-lec:#ef4444; --t-other:#eab308;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(900px 400px at 15% -5%,rgba(99,102,241,.14),transparent 60%),
+    radial-gradient(700px 350px at 90% 0%,rgba(34,211,238,.10),transparent 60%),var(--bg);
+    color:var(--text);font-family:"Inter","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+    min-height:100vh;padding-bottom:70px}
+  .topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    background:rgba(11,14,20,.72);border-bottom:1px solid var(--border)}
+  .topbar-inner{max-width:1180px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;margin-right:auto}
+  .logo-mark{width:32px;height:32px;border-radius:9px;background:var(--grad);display:grid;place-items:center;
+    color:#fff;box-shadow:0 4px 14px rgba(99,102,241,.4)}
+  .logo-text .gname{font-size:.98rem}
+  .logo-text .author{font-size:.7rem;color:var(--text-faint);font-weight:400;user-select:none}
+  .owner-chip{padding:3px 11px;border-radius:999px;font-size:.72rem;font-weight:700;cursor:pointer;
+    background:rgba(52,211,153,.14);color:var(--success);border:1px solid rgba(52,211,153,.4)}
+  .btn{background:var(--surface-2);color:var(--text);border:1px solid var(--border);padding:8px 14px;
+    border-radius:10px;font-size:.85rem;font-family:inherit;cursor:pointer;transition:all .18s ease;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .btn:hover{border-color:var(--border-strong);background:var(--surface-3);transform:translateY(-1px)}
+  .btn.primary{background:var(--grad);border:none;color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.35)}
+  .btn.primary:hover{filter:brightness(1.1)}
+  .btn.editing{background:linear-gradient(135deg,#f59e0b,#ef4444);border:none;color:#fff}
+  .btn.icon{padding:8px 11px;font-size:1rem;line-height:1}
+  .btn.active{background:var(--grad);border-color:transparent;color:#fff}
+  .weeknav{max-width:1180px;margin:22px auto 0;padding:0 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .week-label{flex:1;min-width:220px}
+  .week-label h2{font-size:1.35rem;font-weight:700}
+  .week-label .sub{color:var(--text-dim);font-size:.85rem;margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .parity-badge{padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:600;
+    background:rgba(99,102,241,.18);color:#a5b4fc;border:1px solid rgba(99,102,241,.35)}
+  .parity-badge.p2{background:rgba(34,211,238,.14);color:#67e8f9;border-color:rgba(34,211,238,.3)}
+  .current-chip{padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:600;
+    background:rgba(52,211,153,.14);color:var(--success);border:1px solid rgba(52,211,153,.3)}
+  .view-switch{display:flex;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;flex-wrap:wrap}
+  .view-switch .btn{border:none;background:transparent;padding:7px 14px}
+  .view-switch .btn.active{background:var(--grad)}
+  .search-wrap{max-width:1180px;margin:14px auto 0;padding:0 24px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .search-input{flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    color:var(--text);font-family:inherit;font-size:.88rem;padding:10px 16px;transition:all .18s}
+  .search-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+  .legend{display:flex;gap:8px;flex-wrap:wrap}
+  .type-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;cursor:pointer;
+    font-size:.78rem;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);transition:all .15s;user-select:none}
+  .type-chip .dot{width:9px;height:9px;border-radius:50%}
+  .type-chip[data-type="lab"] .dot{background:var(--t-lab)}
+  .type-chip[data-type="practice"] .dot{background:var(--t-prac)}
+  .type-chip[data-type="lecture"] .dot{background:var(--t-lec)}
+  .type-chip[data-type="other"] .dot{background:var(--t-other)}
+  .type-chip.on{color:var(--text);border-color:var(--border-strong);background:var(--surface-3)}
+  .type-chip.off{opacity:.38}
+  .stats{max-width:1180px;margin:14px auto 0;padding:0 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 18px}
+  .stat-card .num{font-size:1.3rem;font-weight:700}
+  .stat-card .cap{color:var(--text-dim);font-size:.78rem;margin-top:2px}
+  .progress-track{height:6px;border-radius:999px;background:var(--surface-3);margin-top:10px;overflow:hidden}
+  .progress-fill{height:100%;border-radius:999px;background:var(--grad);transition:width .4s ease}
+  .panels{max-width:1180px;margin:14px auto 0;padding:0 24px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px}
+  .panel h3{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);margin-bottom:10px}
+  .notes-area{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);
+    font-family:inherit;font-size:.87rem;line-height:1.9;padding:10px 13px;resize:none;overflow:hidden;min-height:44px;transition:all .18s}
+  .notes-area:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+  .todo-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:9px;cursor:pointer;font-size:.84rem;transition:background .15s}
+  .todo-item:hover{background:var(--surface-2)}
+  .todo-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .todo-item .dn{color:var(--text-faint);font-size:.76rem;margin-left:auto;white-space:nowrap}
+  .todo-empty{color:var(--text-faint);font-size:.84rem;font-style:italic;padding:4px 0}
+  .edit-note{max-width:1132px;margin:14px auto 0;padding:12px 18px;border-radius:12px;background:rgba(245,158,11,.08);
+    border:1px solid rgba(245,158,11,.3);color:#fbbf24;font-size:.83rem;display:none}
+  body.edit-mode .edit-note{display:block}
+  .days{max-width:1180px;margin:20px auto 0;padding:0 24px;display:flex;flex-direction:column;gap:18px}
+  .day-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s}
+  .day-card:hover{border-color:var(--border-strong)}
+  .day-card.today{border:1px solid rgba(99,102,241,.55);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+  .day-head{display:flex;align-items:center;gap:12px;padding:13px 20px;background:var(--surface-2);border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .day-head .dname{font-weight:700}
+  .day-head .ddate{color:var(--text-dim);font-size:.85rem}
+  .today-badge{padding:3px 11px;border-radius:999px;font-size:.72rem;font-weight:700;background:var(--grad);color:#fff}
+  .override-badge{padding:3px 11px;border-radius:999px;font-size:.72rem;font-weight:600;
+    background:rgba(245,158,11,.14);color:#fbbf24;border:1px solid rgba(245,158,11,.4)}
+  .day-head .count{margin-left:auto;color:var(--text-faint);font-size:.78rem}
+  .day-edit-controls{width:100%;display:flex;gap:8px;flex-wrap:wrap;padding-top:4px}
+  .btn-sm{padding:5px 12px;font-size:.76rem;border-radius:8px;border:1px dashed var(--border-strong);
+    background:transparent;color:var(--text-dim);font-family:inherit;cursor:pointer;transition:all .15s}
+  .btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-sm.warn{border-color:rgba(245,158,11,.5);color:#fbbf24}
+  .cols-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);padding:8px 20px 0}
+  .cols-head span{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);padding:6px 0}
+  .lesson-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);border-top:1px solid var(--border);position:relative;transition:background .15s}
+  .lesson-row:hover{background:rgba(255,255,255,.016)}
+  .lesson-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+  .lesson-row.t-lab::before{background:var(--t-lab)}
+  .lesson-row.t-practice::before{background:var(--t-prac)}
+  .lesson-row.t-lecture::before{background:var(--t-lec)}
+  .lesson-row.t-other::before{background:var(--t-other)}
+  .cell-schedule{padding:14px 16px 14px 24px;display:flex;gap:14px;align-items:flex-start;min-width:0;border-right:1px solid var(--border)}
+  .time-block{flex-shrink:0;width:58px;text-align:center}
+  .time-block .t{font-size:.92rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .t-lab .time-block .t{color:var(--t-lab)} .t-practice .time-block .t{color:var(--t-prac)}
+  .t-lecture .time-block .t{color:var(--t-lec)} .t-other .time-block .t{color:var(--t-other)}
+  .time-block .bar{width:26px;height:3px;border-radius:99px;margin:6px auto 0;opacity:.6}
+  .t-lab .bar{background:var(--t-lab)} .t-practice .bar{background:var(--t-prac)}
+  .t-lecture .bar{background:var(--t-lec)} .t-other .bar{background:var(--t-other)}
+  .subj-block{min-width:0;flex:1}
+  .subj-name{font-weight:600;font-size:.95rem;overflow-wrap:break-word}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .room-chip,.teacher-chip{padding:2px 9px;border-radius:7px;background:var(--surface-3);border:1px solid var(--border);color:var(--text-dim);font-size:.74rem}
+  .type-badge{padding:2px 9px;border-radius:7px;font-size:.72rem;font-weight:600}
+  .type-badge.lab{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.35)}
+  .type-badge.practice{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.35)}
+  .type-badge.lecture{background:rgba(239,68,68,.13);color:#f87171;border:1px solid rgba(239,68,68,.35)}
+  .type-badge.other{background:rgba(234,179,8,.12);color:#facc15;border:1px solid rgba(234,179,8,.35)}
+  .now-badge{padding:2px 9px;border-radius:7px;font-size:.72rem;font-weight:700;background:rgba(52,211,153,.15);
+    color:var(--success);border:1px solid rgba(52,211,153,.4);animation:pulse 1.6s ease-in-out infinite}
+  .event-badge{padding:2px 10px;border-radius:7px;font-size:.74rem;font-weight:700;cursor:pointer;
+    background:linear-gradient(135deg,rgba(239,68,68,.25),rgba(245,158,11,.25));color:#fca5a5;
+    border:1px solid rgba(239,68,68,.5);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.5}}
+  .done .subj-name{text-decoration:line-through;color:var(--text-faint)}
+  .done .time-block .t{opacity:.45}
+  .cell-hw{padding:12px 20px 12px 16px;display:flex;gap:12px;align-items:flex-start;min-width:0}
+  .check{position:relative;flex-shrink:0;width:22px;height:22px;margin-top:6px;cursor:pointer}
+  .check input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer}
+  .check .box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border-strong);background:var(--surface-2);
+    display:grid;place-items:center;transition:all .18s;font-size:.75rem;color:transparent}
+  .check input:checked + .box{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 2px 10px rgba(99,102,241,.4)}
+  .check:hover .box{border-color:var(--accent)}
+  .hw-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+  .hw-area{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);
+    font-family:inherit;font-size:.87rem;line-height:1.9;padding:10px 13px;resize:none;overflow:hidden;min-height:44px;transition:all .18s}
+  .hw-area:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+  .hw-area[readonly]{opacity:.75;cursor:default}
+  .hw-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn-attach{background:transparent;border:1px dashed var(--border-strong);color:var(--text-faint);border-radius:8px;
+    padding:4px 11px;font-size:.76rem;font-family:inherit;cursor:pointer;transition:all .15s}
+  .btn-attach:hover{border-color:var(--accent);color:var(--accent)}
+  .photo-grid{display:flex;gap:8px;flex-wrap:wrap}
+  .photo-thumb{position:relative;width:64px;height:64px;border-radius:9px;overflow:hidden;border:1px solid var(--border-strong);cursor:pointer}
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .photo-del,.file-del{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:6px;border:none;
+    background:rgba(0,0,0,.65);color:#f87171;font-size:.65rem;line-height:1;cursor:pointer}
+  .file-list{display:flex;flex-direction:column;gap:6px}
+  .file-item{position:relative;display:flex;align-items:center;gap:8px;background:var(--surface-2);
+    border:1px solid var(--border);border-radius:9px;padding:7px 30px 7px 11px;font-size:.8rem}
+  .file-item a{color:#8ab8ff;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .file-del{top:50%;transform:translateY(-50%)}
+  .suggestion{display:flex;align-items:flex-start;gap:8px;background:rgba(245,158,11,.07);
+    border:1px dashed rgba(245,158,11,.4);border-radius:9px;padding:8px 11px;font-size:.8rem}
+  .suggestion .txt{flex:1;min-width:0;color:#fbbf24;line-height:1.6;overflow-wrap:break-word}
+  .suggestion button{border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;flex-shrink:0;font-size:.75rem}
+  .sug-ok{background:rgba(52,211,153,.2);color:var(--success)}
+  .sug-no{background:rgba(239,68,68,.15);color:#f87171}
+  .empty-day{padding:20px;border-top:1px solid var(--border);color:var(--text-faint);font-size:.88rem;font-style:italic}
+  .personal-stub{max-width:1180px;margin:30px auto;padding:0 24px;text-align:center}
+  .personal-stub .panel{padding:40px 24px}
+  .lightbox{position:fixed;inset:0;z-index:100;background:rgba(5,7,12,.9);display:none;place-items:center;padding:30px;cursor:zoom-out}
+  .lightbox.open{display:grid}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:12px}
+  .edit-fields{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+  .edit-input,.edit-select{background:var(--surface-2);border:1px dashed rgba(245,158,11,.5);border-radius:8px;color:var(--text);
+    font-family:inherit;font-size:.85rem;padding:7px 11px;width:100%}
+  .edit-input:focus,.edit-select:focus{outline:none;border-color:var(--accent);border-style:solid}
+  .btn-del{flex-shrink:0;width:30px;height:30px;border-radius:9px;border:1px solid rgba(239,68,68,.4);
+    background:rgba(239,68,68,.1);color:#f87171;cursor:pointer;font-size:.85rem}
+  .btn-del:hover{background:var(--danger);color:#fff}
+  .btn-add-lesson{margin:12px 20px 16px;padding:9px 16px;border-radius:10px;border:1px dashed var(--border-strong);
+    background:transparent;color:var(--text-dim);font-family:inherit;font-size:.84rem;cursor:pointer}
+  .btn-add-lesson:hover{border-color:var(--accent);color:var(--accent)}
+  @media (max-width:820px){
+    .lesson-row,.cols-head{grid-template-columns:1fr}
+    .cell-schedule{border-right:none;padding-bottom:4px}
+    .cell-hw{padding-top:4px}
+    .cols-head span:last-child{display:none}
+    .stats,.panels{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">
+        <span class="logo-mark">&#9998;</span>
+        <span class="logo-text">
+          <span class="gname">Группа 10604226</span><br>
+          <span class="author">Создатель: Семченко Ян Александрович</span>
+        </span>
+      </div>
+      <span class="owner-chip" id="ownerChip" style="display:none" title="Нажмите, чтобы выйти">&#128081; Режим владельца</span>
+      <button class="btn" id="btnCopy">&#10697; Копировать ДЗ</button>
+      <button class="btn" id="btnExport">&#8681; Экспорт</button>
+      <button class="btn" id="btnImport">&#8679; Импорт</button>
+      <input type="file" id="importFile" accept=".json" style="display:none">
+      <button class="btn primary" id="btnEdit">Редактировать</button>
+    </div>
+  </header>
+
+  <nav class="weeknav">
+    <div class="week-label">
+      <h2 id="weekRange"></h2>
+      <div class="sub">
+        <span class="parity-badge" id="parityBadge"></span>
+        <span class="current-chip" id="currentChip" style="display:none">Текущая неделя</span>
+      </div>
+    </div>
+    <div class="view-switch" id="viewSwitch"></div>
+    <button class="btn icon" id="btnPrev">&#8249;</button>
+    <button class="btn" id="btnToday">Сегодня</button>
+    <button class="btn icon" id="btnNext">&#8250;</button>
+  </nav>
+
+  <div class="search-wrap">
+    <input class="search-input" id="searchInput" type="text" placeholder="Поиск по предметам, ДЗ, кабинетам, преподавателям...">
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <section class="stats">
+    <div class="stat-card"><div class="num" id="statLessons">0</div><div class="cap">пар на этой неделе</div></div>
+    <div class="stat-card"><div class="num" id="statHw">0</div><div class="cap">заданий записано</div></div>
+    <div class="stat-card"><div class="num" id="statDone">0%</div><div class="cap">выполнено</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div></div>
+  </section>
+
+  <section class="panels">
+    <div class="panel"><h3>Заметки недели</h3>
+      <textarea class="notes-area" id="weekNotes" placeholder="Заметки, дедлайны, напоминания..."></textarea></div>
+    <div class="panel"><h3>Не сделано</h3><div id="todoList"></div></div>
+  </section>
+
+  <div class="edit-note" id="editNote"></div>
+  <main class="days" id="days"></main>
+  <div class="lightbox" id="lightbox"><img id="lightboxImg" alt=""></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "studentDiaryData_v8";
+  var ANCHOR_MONDAY = new Date(2026, 9, 12);
+  var LESSON_MINUTES = 95, MAX_FILE_MB = 2;
+
+  // ======== PIN ВЛАДЕЛЬЦА ========
+  // Замените на хэш своего PIN. Как получить: откройте консоль браузера (F12) и выполните:
+  // crypto.subtle.digest("SHA-256", new TextEncoder().encode("ВАШ_PIN")).then(b=>console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("")))
+  var OWNER_PIN_HASH = "a067852cdadcd38c082d2758dd6b71a6af9c1edfb04fabc340b434fee8b263c6";
+
+  var ownerUnlocked = sessionStorage.getItem("diaryOwner") === "1";
+  function sha256hex(str){
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0");}).join("");
+    });
+  }
+  function requestOwner(cb){
+    if(ownerUnlocked){cb();return;}
+    var pin=prompt("Введите PIN владельца:");
+    if(pin===null)return;
+    sha256hex(pin).then(function(h){
+      if(h===OWNER_PIN_HASH){ownerUnlocked=true;sessionStorage.setItem("diaryOwner","1");cb();}
+      else alert("Неверный PIN.");
+    });
+  }
+
+  var DAY_NAMES=["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"];
+  var TYPES={lab:{name:"Лаба"},practice:{name:"Практика"},lecture:{name:"Лекция"},other:{name:"Другое"}};
+  var VIEWS={common:"Общее",sub1:"1 подгруппа",sub2:"2 подгруппа",personal:"Моё"};
+
+  function getMonday(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());var w=x.getDay();x.setDate(x.getDate()+((w===0)?-6:1-w));return x;}
+  function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x;}
+  function isoDate(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+  function weekParity(m){var w=Math.round((m-getMonday(ANCHOR_MONDAY))/604800000);return((w%2)+2)%2;}
+  function isSameDate(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+  function parseTime(t){var m=/^(\d{1,2}):(\d{2})/.exec(t||"");return m?(+m[1])*60+(+m[2]):99999;}
+  function newId(){return "L"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+
+  function L(id,time,subject,room){return{id:id,time:time,subject:subject,room:room,type:"other",teacher:""};}
+  function defaultWeeks(p){
+    return {
+      week1:[
+        {lessons:[L(p+"1d0a","8:00","Инженерка","а520 к8"),L(p+"1d0b","9:55","Матем","а437 к1"),L(p+"1d0c","11:40","Химия","а510 к11")]},
+        {lessons:[L(p+"1d1a","8:00","Химия","а210 к6"),L(p+"1d1b","9:55","Физра",""),L(p+"1d1c","11:40","Матвед / Информ","а11 к7 / а208 к3"),L(p+"1d1d","13:55","Матем","а424 к8")]},
+        {lessons:[L(p+"1d2a","8:00","Англ","а431 к1"),L(p+"1d2b","9:55","ИБГ","а449 к1"),L(p+"1d2c","11:40","Информ","а453 к1")]},
+        {lessons:[L(p+"1d3a","9:55","Информ","а310 к8"),L(p+"1d3b","11:40","ИБГ","а310 к8"),L(p+"1d3c","13:55","Информ","а208 к3")]},
+        {lessons:[L(p+"1d4a","9:55","Физра",""),L(p+"1d4b","11:40","Введ в инж","а1110 к2"),L(p+"1d4c","13:55","Информ","а208 к3")]},
+        {lessons:[L(p+"1d5a","8:00","Матвед","а310 к8"),L(p+"1d5b","9:55","Инженерка","а310 к8")]}
+      ],
+      week2:[
+        {lessons:[L(p+"2d0a","8:00","Инженерка","а520 к8"),L(p+"2d0b","9:55","Матем","а437 к1"),L(p+"2d0c","11:40","Матем","а436 к1")]},
+        {lessons:[L(p+"2d1a","8:00","Химия","а210 к6"),L(p+"2d1b","9:55","Физра",""),L(p+"2d1c","11:40","Матвед / Информ","а11 к7 / а208 к3"),L(p+"2d1d","13:55","Матем","а424 к8")]},
+        {lessons:[L(p+"2d2a","8:00","Англ","а431 к1"),L(p+"2d2b","9:55","Инженерка","а520 к8"),L(p+"2d2c","11:40","Матем","а453 к1"),L(p+"2d2d","13:55","Матем","а4536 к1")]},
+        {lessons:[L(p+"2d3a","9:55","Информ","а310 к8"),L(p+"2d3b","11:40","ИБГ","а310 к8"),L(p+"2d3c","13:55","Информ","а208 к3")]},
+        {lessons:[L(p+"2d4a","9:55","Физра",""),L(p+"2d4b","11:40","Химия","а453 к1"),L(p+"2d4c","13:55","Информ","а208 к3")]},
+        {lessons:[L(p+"2d5a","8:00","Матвед","а310 к8"),L(p+"2d5b","9:55","Инженерка","а310 к8")]}
+      ]
+    };
+  }
+
+  // ======== Хранилище ========
+  var store, editMode=false, currentMonday=getMonday(new Date()), searchQuery="";
+  var activeTypes={lab:true,practice:true,lecture:true,other:true};
+
+  function normalizeLessons(arr){arr.forEach(function(l){
+    if(typeof l.id!=="string"||!l.id)l.id=newId();
+    if(typeof l.time!=="string")l.time="";
+    if(typeof l.subject!=="string")l.subject="";
+    if(typeof l.room!=="string")l.room="";
+    if(typeof l.teacher!=="string")l.teacher="";
+    if(!TYPES[l.type])l.type="other";
+  });}
+
+  function normalizeTemplate(t){
+    if(!Array.isArray(t.week1)||t.week1.length!==6||!Array.isArray(t.week2)||t.week2.length!==6)throw new Error("bad");
+    ["week1","week2"].forEach(function(w){t[w].forEach(function(d){
+      if(!Array.isArray(d.lessons))d.lessons=[];normalizeLessons(d.lessons);});});
+  }
+
+  function normalize(s){
+    if(!s||typeof s!=="object"||!s.templates)throw new Error("bad");
+    ["common","sub1","sub2"].forEach(function(k){
+      if(!s.templates[k])throw new Error("bad");
+      normalizeTemplate(s.templates[k]);
+    });
+    if(s.templates.personal)normalizeTemplate(s.templates.personal);
+    else s.templates.personal=null;
+    if(!VIEWS[s.view])s.view="common";
+    if(!s.weeks||typeof s.weeks!=="object")s.weeks={};
+    if(!s.notes||typeof s.notes!=="object")s.notes={};
+    if(!s.overrides||typeof s.overrides!=="object")s.overrides={};
+    if(!s.suggestions||typeof s.suggestions!=="object")s.suggestions={};
+    Object.keys(VIEWS).forEach(function(v){if(!s.overrides[v]||typeof s.overrides[v]!=="object")s.overrides[v]={};});
+    return s;
+  }
+
+  function cloneWithNewIds(t){
+    var c=JSON.parse(JSON.stringify(t));
+    ["week1","week2"].forEach(function(w){c[w].forEach(function(d){d.lessons.forEach(function(l){l.id=newId();});});});
+    return c;
+  }
+
+  function loadStore(){
+    try{
+      var raw=localStorage.getItem(STORAGE_KEY);
+      if(raw){store=normalize(JSON.parse(raw));return;}
+      var old=localStorage.getItem("studentDiaryData_v7");
+      if(old){
+        var o=JSON.parse(old);
+        store=normalize({
+          templates:{common:cloneWithNewIds(o.templates.sub1),sub1:o.templates.sub1,sub2:o.templates.sub2,personal:null},
+          view:"common",weeks:o.weeks||{},notes:o.notes||{},overrides:{},suggestions:{}
+        });
+        return;
+      }
+      store=normalize({templates:{common:defaultWeeks("c"),sub1:defaultWeeks("a"),sub2:defaultWeeks("b"),personal:null},
+        view:"common",weeks:{},notes:{},overrides:{},suggestions:{}});
+    }catch(e){
+      store=normalize({templates:{common:defaultWeeks("c"),sub1:defaultWeeks("a"),sub2:defaultWeeks("b"),personal:null},
+        view:"common",weeks:{},notes:{},overrides:{},suggestions:{}});
+    }
+  }
+
+  // Оптимизация: отложенное сохранение
+  var saveTimer=null,quotaWarned=false;
+  function saveNow(){
+    clearTimeout(saveTimer);saveTimer=null;
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(store));}
+    catch(e){if(!quotaWarned){quotaWarned=true;alert("Хранилище переполнено. Удалите часть фото/файлов или сделайте экспорт.");}}
+  }
+  function saveStore(){if(saveTimer)return;saveTimer=setTimeout(saveNow,600);}
+
+  function weekEntry(iso,id){
+    if(!store.weeks[iso])store.weeks[iso]={};
+    var e=store.weeks[iso][id];
+    if(!e)e=store.weeks[iso][id]={hw:"",done:false,photos:[],files:[],event:""};
+    if(!Array.isArray(e.photos))e.photos=[];
+    if(!Array.isArray(e.files))e.files=[];
+    if(typeof e.event!=="string")e.event="";
+    return e;
+  }
+
+  function suggestionsFor(iso,id){
+    if(!store.suggestions[iso])store.suggestions[iso]={};
+    if(!Array.isArray(store.suggestions[iso][id]))store.suggestions[iso][id]=[];
+    return store.suggestions[iso][id];
+  }
+
+  function getOverride(iso,di){var o=store.overrides[store.view];return(o&&o[iso]&&o[iso][di])||null;}
+  function createOverride(iso,di,day){var o=store.overrides[store.view];if(!o[iso])o[iso]={};
+    o[iso][di]={lessons:JSON.parse(JSON.stringify(day.lessons))};saveNow();}
+  function removeOverride(iso,di){var o=store.overrides[store.view];
+    if(o[iso]){delete o[iso][di];if(!Object.keys(o[iso]).length)delete o[iso];}saveNow();}
+  function activeTemplate(){return store.templates[store.view];}
+  function effectiveLessons(iso,weekKey,di){
+    var ov=getOverride(iso,di);
+    return ov?ov.lessons:activeTemplate()[weekKey][di].lessons;
+  }
+  // Можно ли напрямую писать ДЗ/расписание в текущем виде
+  function canWrite(){return store.view==="personal"||ownerUnlocked;}
+
+  function compressImage(file,cb){
+    var img=new Image(),url=URL.createObjectURL(file);
+    img.onload=function(){
+      var max=1024,sc=Math.min(1,max/Math.max(img.width,img.height));
+      var c=document.createElement("canvas");
+      c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);cb(c.toDataURL("image/jpeg",0.6));
+    };
+    img.onerror=function(){URL.revokeObjectURL(url);alert("Не удалось обработать изображение.");};
+    img.src=url;
+  }
+
+  var lightbox=document.getElementById("lightbox"),lightboxImg=document.getElementById("lightboxImg");
+  function openLightbox(src){lightboxImg.src=src;lightbox.classList.add("open");}
+  lightbox.addEventListener("click",function(){lightbox.classList.remove("open");lightboxImg.src="";});
+
+  var daysEl=document.getElementById("days"),weekRange=document.getElementById("weekRange"),
+      parityBadge=document.getElementById("parityBadge"),currentChip=document.getElementById("currentChip"),
+      statLessons=document.getElementById("statLessons"),statHw=document.getElementById("statHw"),
+      statDone=document.getElementById("statDone"),progressFill=document.getElementById("progressFill"),
+      btnEdit=document.getElementById("btnEdit"),legend=document.getElementById("legend"),
+      weekNotes=document.getElementById("weekNotes"),todoList=document.getElementById("todoList"),
+      viewSwitch=document.getElementById("viewSwitch"),editNote=document.getElementById("editNote"),
+      ownerChip=document.getElementById("ownerChip");
+
+  function autosize(ta){ta.style.height="44px";ta.style.height=Math.max(44,ta.scrollHeight)+"px";}
+  function plural(n,a,b,c){var x=n%10,y=n%100;if(x===1&&y!==11)return a;if(x>=2&&x<=4&&(y<12||y>14))return b;return c;}
+
+  function matchesSearch(l,e){
+    if(!searchQuery)return true;
+    var q=searchQuery.toLowerCase();
+    return(l.subject||"").toLowerCase().indexOf(q)>=0||(l.room||"").toLowerCase().indexOf(q)>=0||
+      (l.teacher||"").toLowerCase().indexOf(q)>=0||(e.hw||"").toLowerCase().indexOf(q)>=0||(e.event||"").toLowerCase().indexOf(q)>=0;
+  }
+  function isNow(l,d){
+    var s=parseTime(l.time);if(s>=99999)return false;
+    var n=new Date();if(!isSameDate(n,d))return false;
+    var m=n.getHours()*60+n.getMinutes();return m>=s&&m<s+LESSON_MINUTES;
+  }
+
+  function updateStats(){
+    var parity=weekParity(currentMonday),weekKey=parity===0?"week1":"week2",iso=isoDate(currentMonday);
+    if(!activeTemplate()){statLessons.textContent="0";statHw.textContent="0";statDone.textContent="0%";progressFill.style.width="0%";return;}
+    var total=0,hwc=0,dc=0;
+    for(var di=0;di<6;di++)effectiveLessons(iso,weekKey,di).forEach(function(l){
+      total++;var e=(store.weeks[iso]&&store.weeks[iso][l.id])||null;
+      if(e&&(e.hw.trim()||e.photos.length||e.files.length))hwc++;
+      if(e&&e.done)dc++;
+    });
+    statLessons.textContent=total;statHw.textContent=hwc;
+    var pct=total?Math.round(dc/total*100):0;
+    statDone.textContent=pct+"%";progressFill.style.width=pct+"%";
+  }
+
+  function render(){
+    var parity=weekParity(currentMonday),weekKey=parity===0?"week1":"week2",iso=isoDate(currentMonday),today=new Date();
+    var isCurrent=isSameDate(currentMonday,getMonday(today));
+    var sat=addDays(currentMonday,5);
+    weekRange.textContent=currentMonday.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})+" — "+
+      sat.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
+    parityBadge.textContent=parity===0?"1-я неделя":"2-я неделя";
+    parityBadge.className="parity-badge"+(parity===1?" p2":"");
+    currentChip.style.display=isCurrent?"inline-block":"none";
+    ownerChip.style.display=ownerUnlocked?"inline-block":"none";
+    btnEdit.textContent=editMode?"Готово":"Редактировать";
+    btnEdit.className=editMode?"btn editing":"btn primary";
+    document.body.classList.toggle("edit-mode",editMode);
+
+    // Переключатель видов
+    viewSwitch.innerHTML="";
+    Object.keys(VIEWS).forEach(function(v){
+      var b=document.createElement("button");
+      b.className="btn"+(store.view===v?" active":"");
+      b.textContent=VIEWS[v];
+      b.addEventListener("click",function(){store.view=v;editMode=false;saveNow();render();});
+      viewSwitch.appendChild(b);
+    });
+
+    editNote.innerHTML="Режим редактирования («"+VIEWS[store.view]+"»): по умолчанию изменения применяются ко всем "+
+      (parity===0?"1-м":"2-м")+" неделям. «Только эта неделя» у дня — изменение одной даты.";
+
+    weekNotes.value=store.notes[iso]||"";
+    requestAnimationFrame(function(){autosize(weekNotes);});
+
+    daysEl.innerHTML="";
+
+    // «Моё» расписание ещё не создано
+    if(store.view==="personal"&&!store.templates.personal){
+      var stub=document.createElement("div");stub.className="personal-stub panel";
+      stub.innerHTML="<p style='color:var(--text-dim);margin-bottom:16px'>У вас ещё нет персонального расписания. Создайте его на основе общего и настройте под себя — уберите чужие подгрупповые пары, добавьте свои.</p>";
+      var mk=document.createElement("button");mk.className="btn primary";mk.textContent="Создать из общего расписания";
+      mk.addEventListener("click",function(){
+        store.templates.personal=cloneWithNewIds(store.templates.common);
+        saveNow();render();
+      });
+      stub.appendChild(mk);
+      daysEl.appendChild(stub);
+      legend.innerHTML="";todoList.innerHTML="";updateStats();
+      return;
+    }
+
+    var allDays=[];for(var di0=0;di0<6;di0++)allDays.push(effectiveLessons(iso,weekKey,di0));
+
+    // Легенда
+    var tc={lab:0,practice:0,lecture:0,other:0};
+    allDays.forEach(function(ls){ls.forEach(function(l){tc[l.type]++;});});
+    legend.innerHTML="";
+    Object.keys(TYPES).forEach(function(key){
+      var chip=document.createElement("span");
+      chip.className="type-chip "+(activeTypes[key]?"on":"off");
+      chip.setAttribute("data-type",key);
+      chip.innerHTML='<span class="dot"></span>'+TYPES[key].name+" · "+tc[key];
+      chip.addEventListener("click",function(){activeTypes[key]=!activeTypes[key];render();});
+      legend.appendChild(chip);
+    });
+
+    updateStats();
+
+    // «Не сделано»
+    todoList.innerHTML="";
+    var todos=[];
+    allDays.forEach(function(ls,di2){ls.forEach(function(l){
+      var e=(store.weeks[iso]&&store.weeks[iso][l.id])||null;
+      if(e&&!e.done&&(e.hw.trim()||e.photos.length||e.files.length))todos.push({lesson:l,dayIndex:di2});
+    });});
+    if(!todos.length){var te=document.createElement("div");te.className="todo-empty";te.textContent="Всё сделано — отлично!";todoList.appendChild(te);}
+    else todos.forEach(function(t){
+      var item=document.createElement("div");item.className="todo-item";
+      var dot=document.createElement("span");dot.className="dot";
+      dot.style.background="var(--t-"+(t.lesson.type==="practice"?"prac":t.lesson.type==="lecture"?"lec":t.lesson.type==="lab"?"lab":"other")+")";
+      var nm=document.createElement("span");nm.textContent=t.lesson.subject;
+      var dn=document.createElement("span");dn.className="dn";dn.textContent=DAY_NAMES[t.dayIndex].slice(0,2);
+      item.appendChild(dot);item.appendChild(nm);item.appendChild(dn);
+      item.addEventListener("click",function(){var el=document.getElementById("row-"+t.lesson.id);if(el)el.scrollIntoView({behavior:"smooth",block:"center"});});
+      todoList.appendChild(item);
+    });
+
+    var frag=document.createDocumentFragment();
+    for(var dayIndex=0;dayIndex<6;dayIndex++)(function(dayIndex){
+      var dayDate=addDays(currentMonday,dayIndex);
+      var ov=getOverride(iso,dayIndex);
+      var lessonsArr=allDays[dayIndex];
+      var templateDay=activeTemplate()[weekKey][dayIndex];
+      var writable=canWrite();
+
+      var card=document.createElement("article");
+      card.className="day-card"+(isSameDate(dayDate,today)?" today":"");
+
+      var head=document.createElement("div");head.className="day-head";
+      var dname=document.createElement("span");dname.className="dname";dname.textContent=DAY_NAMES[dayIndex];
+      var ddate=document.createElement("span");ddate.className="ddate";
+      ddate.textContent=dayDate.toLocaleDateString("ru-RU",{day:"numeric",month:"long"});
+      head.appendChild(dname);head.appendChild(ddate);
+      if(isSameDate(dayDate,today)){var tb=document.createElement("span");tb.className="today-badge";tb.textContent="Сегодня";head.appendChild(tb);}
+      if(ov){var ob=document.createElement("span");ob.className="override-badge";ob.textContent="Изменено для этой недели";head.appendChild(ob);}
+      var cnt=document.createElement("span");cnt.className="count";
+      cnt.textContent=lessonsArr.length?lessonsArr.length+" "+plural(lessonsArr.length,"пара","пары","пар"):"нет пар";
+      head.appendChild(cnt);
+
+      if(editMode&&writable){
+        var ctr=document.createElement("div");ctr.className="day-edit-controls";
+        if(!ov){
+          var mk2=document.createElement("button");mk2.className="btn-sm warn";mk2.type="button";mk2.textContent="Только эта неделя";
+          mk2.addEventListener("click",function(){createOverride(iso,dayIndex,templateDay);render();});
+          ctr.appendChild(mk2);
+        }else{
+          var rm=document.createElement("button");rm.className="btn-sm";rm.type="button";rm.textContent="Вернуть общее расписание";
+          rm.addEventListener("click",function(){if(confirm("Вернуть общее расписание этого дня?")){removeOverride(iso,dayIndex);render();}});
+          ctr.appendChild(rm);
+        }
+        head.appendChild(ctr);
+      }
+      card.appendChild(head);
+
+      var visible=lessonsArr.slice().sort(function(a,b){return parseTime(a.time)-parseTime(b.time);})
+        .filter(function(l){
+          if(editMode)return true;
+          return activeTypes[l.type]&&matchesSearch(l,weekEntry(iso,l.id));
+        });
+
+      if(lessonsArr.length===0&&!editMode){
+        var em=document.createElement("div");em.className="empty-day";em.textContent="Выходной — пар нет";card.appendChild(em);
+      }else if(visible.length===0&&!editMode){
+        var nf=document.createElement("div");nf.className="empty-day";nf.textContent="Нет пар по заданному фильтру";card.appendChild(nf);
+      }else if(visible.length>0){
+        var chh=document.createElement("div");chh.className="cols-head";
+        var c1=document.createElement("span");c1.textContent="Расписание";
+        var c2=document.createElement("span");c2.textContent="Домашнее задание";
+        chh.appendChild(c1);chh.appendChild(c2);card.appendChild(chh);
+      }
+
+      visible.forEach(function(lesson){
+        var entry=weekEntry(iso,lesson.id);
+        var sugs=suggestionsFor(iso,lesson.id);
+        var row=document.createElement("div");row.className="lesson-row t-"+lesson.type;row.id="row-"+lesson.id;
+
+        var cs=document.createElement("div");cs.className="cell-schedule"+(entry.done?" done":"");
+
+        if(editMode&&writable){
+          var del=document.createElement("button");del.className="btn-del";del.type="button";del.textContent="\u2715";
+          del.addEventListener("click",function(){
+            if(!confirm("Удалить пару «"+(lesson.subject||"без названия")+"»?"))return;
+            var idx=lessonsArr.indexOf(lesson);if(idx>=0)lessonsArr.splice(idx,1);
+            saveNow();render();
+          });
+          var fields=document.createElement("div");fields.className="edit-fields";
+          [["time","Время (напр. 8:00)"],["subject","Предмет"],["room","Кабинет"],["teacher","Преподаватель"]].forEach(function(cfg){
+            var inp=document.createElement("input");inp.className="edit-input";
+            inp.value=lesson[cfg[0]];inp.placeholder=cfg[1];
+            inp.addEventListener("input",function(){lesson[cfg[0]]=inp.value;saveStore();});
+            fields.appendChild(inp);
+          });
+          var sel=document.createElement("select");sel.className="edit-select";
+          Object.keys(TYPES).forEach(function(k){
+            var opt=document.createElement("option");opt.value=k;opt.textContent=TYPES[k].name;
+            if(lesson.type===k)opt.selected=true;sel.appendChild(opt);
+          });
+          sel.addEventListener("change",function(){lesson.type=sel.value;saveNow();render();});
+          fields.appendChild(sel);
+          cs.appendChild(del);cs.appendChild(fields);
+        }else{
+          var tbl=document.createElement("div");tbl.className="time-block";
+          var t=document.createElement("div");t.className="t";t.textContent=lesson.time||"—";
+          var bar=document.createElement("div");bar.className="bar";
+          tbl.appendChild(t);tbl.appendChild(bar);
+          var sb=document.createElement("div");sb.className="subj-block";
+          var sn=document.createElement("div");sn.className="subj-name";sn.textContent=lesson.subject||"Без названия";
+          sb.appendChild(sn);
+          var chips=document.createElement("div");chips.className="chips";
+          var tbg=document.createElement("span");tbg.className="type-badge "+lesson.type;tbg.textContent=TYPES[lesson.type].name;chips.appendChild(tbg);
+          if(lesson.room){var rc=document.createElement("span");rc.className="room-chip";rc.textContent=lesson.room;chips.appendChild(rc);}
+          if(lesson.teacher){var tch=document.createElement("span");tch.className="teacher-chip";tch.textContent="\uD83D\uDC64 "+lesson.teacher;chips.appendChild(tch);}
+          if(entry.event){
+            var ev=document.createElement("span");ev.className="event-badge";ev.textContent="\u26A1 "+entry.event;
+            if(writable)ev.addEventListener("click",function(){
+              var v=prompt("Событие (пусто — удалить):",entry.event);
+              if(v===null)return;entry.event=v.trim();saveNow();render();
+            });
+            chips.appendChild(ev);
+          }
+          if(isNow(lesson,dayDate)){var nb=document.createElement("span");nb.className="now-badge";nb.textContent="Сейчас идёт";chips.appendChild(nb);}
+          sb.appendChild(chips);
+          cs.appendChild(tbl);cs.appendChild(sb);
+        }
+
+        var chw=document.createElement("div");chw.className="cell-hw";
+        var checkWrap=document.createElement("label");checkWrap.className="check";
+        var cb=document.createElement("input");cb.type="checkbox";cb.checked=entry.done;
+        var box=document.createElement("span");box.className="box";box.textContent="\u2713";
+        cb.addEventListener("change",function(){entry.done=cb.checked;saveNow();cs.classList.toggle("done",entry.done);updateStats();});
+        checkWrap.appendChild(cb);checkWrap.appendChild(box);
+
+        var hwCol=document.createElement("div");hwCol.className="hw-col";
+        var hw=document.createElement("textarea");hw.className="hw-area";hw.value=entry.hw;hw.rows=1;
+        hw.placeholder=writable?"Записать ДЗ...":"ДЗ добавляет владелец (можно предложить ниже)";
+        if(writable)hw.addEventListener("input",function(){entry.hw=hw.value;saveStore();autosize(hw);});
+        else hw.readOnly=true;
+        hwCol.appendChild(hw);
+
+        if(entry.photos.length){
+          var pg=document.createElement("div");pg.className="photo-grid";
+          entry.photos.forEach(function(src,pi){
+            var th=document.createElement("div");th.className="photo-thumb";
+            var im=document.createElement("img");im.src=src;im.alt="Фото ДЗ";
+            im.addEventListener("click",function(){openLightbox(src);});
+            th.appendChild(im);
+            if(writable){
+              var pd=document.createElement("button");pd.className="photo-del";pd.type="button";pd.textContent="\u2715";
+              pd.addEventListener("click",function(e2){e2.stopPropagation();
+                if(confirm("Удалить фото?")){entry.photos.splice(pi,1);saveNow();render();}});
+              th.appendChild(pd);
+            }
+            pg.appendChild(th);
+          });
+          hwCol.appendChild(pg);
+        }
+
+        if(entry.files.length){
+          var fl=document.createElement("div");fl.className="file-list";
+          entry.files.forEach(function(f,fi){
+            var it=document.createElement("div");it.className="file-item";
+            var a=document.createElement("a");a.href=f.data;a.download=f.name;a.textContent="\uD83D\uDCC4 "+f.name;
+            it.appendChild(a);
+            if(writable){
+              var fd=document.createElement("button");fd.className="file-del";fd.type="button";fd.textContent="\u2715";
+              fd.addEventListener("click",function(){if(confirm("Удалить файл?")){entry.files.splice(fi,1);saveNow();render();}});
+              it.appendChild(fd);
+            }
+            fl.appendChild(it);
+          });
+          hwCol.appendChild(fl);
+        }
+
+        // Предложения ДЗ (модерация)
+        if(sugs.length){
+          sugs.forEach(function(s,si){
+            var sg=document.createElement("div");sg.className="suggestion";
+            var tx=document.createElement("span");tx.className="txt";tx.textContent="\u23F3 Предложение: "+s.text;
+            sg.appendChild(tx);
+            if(ownerUnlocked){
+              var ok=document.createElement("button");ok.className="sug-ok";ok.textContent="\u2713";ok.title="Одобрить";
+              ok.addEventListener("click",function(){
+                entry.hw=entry.hw?entry.hw+"\n"+s.text:s.text;
+                sugs.splice(si,1);saveNow();render();
+              });
+              var no=document.createElement("button");no.className="sug-no";no.textContent="\u2715";no.title="Отклонить";
+              no.addEventListener("click",function(){sugs.splice(si,1);saveNow();render();});
+              sg.appendChild(ok);sg.appendChild(no);
+            }
+            hwCol.appendChild(sg);
+          });
+        }
+
+        var tools=document.createElement("div");tools.className="hw-tools";
+        if(writable){
+          var attach=document.createElement("button");attach.className="btn-attach";attach.type="button";attach.textContent="\uD83D\uDCCE Фото";
+          var pInp=document.createElement("input");pInp.type="file";pInp.accept="image/*";pInp.multiple=true;pInp.style.display="none";
+          attach.addEventListener("click",function(){pInp.click();});
+          pInp.addEventListener("change",function(){
+            var fs=Array.prototype.slice.call(pInp.files),left=fs.length;
+            fs.forEach(function(f){compressImage(f,function(du){entry.photos.push(du);left--;if(left<=0){saveNow();render();}});});
+            pInp.value="";
+          });
+          var fBtn=document.createElement("button");fBtn.className="btn-attach";fBtn.type="button";fBtn.textContent="\uD83D\uDCC4 Файл";
+          var fInp=document.createElement("input");fInp.type="file";fInp.multiple=true;fInp.style.display="none";
+          fBtn.addEventListener("click",function(){fInp.click();});
+          fInp.addEventListener("change",function(){
+            var fs=Array.prototype.slice.call(fInp.files),left=fs.length;
+            fs.forEach(function(f){
+              if(f.size>MAX_FILE_MB*1024*1024){alert("Файл «"+f.name+"» больше "+MAX_FILE_MB+" МБ.");left--;return;}
+              var r=new FileReader();
+              r.onload=function(){entry.files.push({name:f.name,data:r.result});left--;if(left<=0){saveNow();render();}};
+              r.readAsDataURL(f);
+            });
+            fInp.value="";
+          });
+          var evB=document.createElement("button");evB.className="btn-attach";evB.type="button";
+          evB.textContent=entry.event?"\u26A1 "+entry.event:"\u26A1 Событие";
+          evB.addEventListener("click",function(){
+            var v=prompt("Событие (Контрольная, Зачёт...). Пусто — удалить:",entry.event);
+            if(v===null)return;entry.event=v.trim();saveNow();render();
+          });
+          tools.appendChild(attach);tools.appendChild(pInp);
+          tools.appendChild(fBtn);tools.appendChild(fInp);tools.appendChild(evB);
+        }else{
+          var sug=document.createElement("button");sug.className="btn-attach";sug.type="button";sug.textContent="\u2795 Предложить ДЗ";
+          sug.addEventListener("click",function(){
+            var v=prompt("Текст ДЗ (появится после одобрения владельца):");
+            if(v===null||!v.trim())return;
+            sugs.push({text:v.trim(),ts:Date.now()});
+            saveNow();render();
+          });
+          tools.appendChild(sug);
+        }
+        hwCol.appendChild(tools);
+
+        chw.appendChild(checkWrap);chw.appendChild(hwCol);
+        row.appendChild(cs);row.appendChild(chw);
+        card.appendChild(row);
+        requestAnimationFrame(function(){autosize(hw);});
+      });
+
+      if(editMode&&writable){
+        var add=document.createElement("button");add.className="btn-add-lesson";add.type="button";
+        add.textContent="+ Добавить пару"+(ov?" (только эта неделя)":"");
+        add.addEventListener("click",function(){
+          lessonsArr.push({id:newId(),time:"",subject:"Новая пара",room:"",teacher:"",type:"other"});
+          saveNow();render();
+        });
+        card.appendChild(add);
+      }
+      frag.appendChild(card);
+    })(dayIndex);
+    daysEl.appendChild(frag);
+  }
+
+  // ======== События ========
+  document.getElementById("btnPrev").addEventListener("click",function(){currentMonday=addDays(currentMonday,-7);render();});
+  document.getElementById("btnNext").addEventListener("click",function(){currentMonday=addDays(currentMonday,7);render();});
+  document.getElementById("btnToday").addEventListener("click",function(){currentMonday=getMonday(new Date());render();});
+
+  btnEdit.addEventListener("click",function(){
+    if(editMode){editMode=false;render();return;}
+    if(store.view==="personal"){
+      if(!store.templates.personal){alert("Сначала создайте персональное расписание.");return;}
+      editMode=true;render();
+    }else{
+      requestOwner(function(){editMode=true;render();});
+    }
+  });
+
+  ownerChip.addEventListener("click",function(){
+    if(confirm("Выйти из режима владельца?")){
+      ownerUnlocked=false;sessionStorage.removeItem("diaryOwner");editMode=false;render();
+    }
+  });
+
+  var searchTimer=null;
+  document.getElementById("searchInput").addEventListener("input",function(e){
+    clearTimeout(searchTimer);
+    searchTimer=setTimeout(function(){searchQuery=e.target.value.trim();render();},250);
+  });
+
+  weekNotes.addEventListener("input",function(){
+    store.notes[isoDate(currentMonday)]=weekNotes.value;saveStore();autosize(weekNotes);
+  });
+
+  document.getElementById("btnCopy").addEventListener("click",function(){
+    var parity=weekParity(currentMonday),weekKey=parity===0?"week1":"week2",iso=isoDate(currentMonday);
+    if(!activeTemplate()){alert("Нет расписания.");return;}
+    var lines=["ДЗ («"+VIEWS[store.view]+"») на неделю "+weekRange.textContent+":"];
+    for(var di=0;di<6;di++){
+      var dl=[];
+      effectiveLessons(iso,weekKey,di).forEach(function(l){
+        var e=(store.weeks[iso]&&store.weeks[iso][l.id])||null;
+        if(e&&(e.hw.trim()||e.event)){
+          var s="  • "+l.subject;
+          if(e.event)s+=" ["+e.event+"]";
+          if(e.hw.trim())s+=": "+e.hw.trim().replace(/\n/g," ");
+          dl.push(s);
+        }
+      });
+      if(dl.length){lines.push("");lines.push(DAY_NAMES[di]+":");lines=lines.concat(dl);}
+    }
+    var text=lines.join("\n");
+    if(navigator.clipboard&&navigator.clipboard.writeText)
+      navigator.clipboard.writeText(text).then(function(){alert("ДЗ скопировано.");});
+    else{
+      var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);
+      ta.select();document.execCommand("copy");document.body.removeChild(ta);alert("ДЗ скопировано.");
+    }
+  });
+
+  document.getElementById("btnExport").addEventListener("click",function(){
+    var blob=new Blob([JSON.stringify(store,null,2)],{type:"application/json"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="diary-backup.json";
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
+  });
+  var importFile=document.getElementById("importFile");
+  document.getElementById("btnImport").addEventListener("click",function(){importFile.click();});
+  importFile.addEventListener("change",function(){
+    var f=importFile.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{store=normalize(JSON.parse(r.result));saveNow();render();alert("Данные импортированы.");}
+      catch(e){alert("Файл не похож на резервную копию.");}
+      importFile.value="";
+    };
+    r.readAsText(f);
+  });
+
+  document.addEventListener("keydown",function(e){
+    var tag=(document.activeElement&&document.activeElement.tagName)||"";
+    if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT")return;
+    if(e.key==="ArrowLeft"){currentMonday=addDays(currentMonday,-7);render();}
+    else if(e.key==="ArrowRight"){currentMonday=addDays(currentMonday,7);render();}
+    else if(e.key==="t"||e.key==="T"||e.key==="е"||e.key==="Е"){currentMonday=getMonday(new Date());render();}
+    else if(e.key==="Escape"&&lightbox.classList.contains("open"))lightbox.classList.remove("open");
+  });
+
+  window.addEventListener("beforeunload",saveNow);
+  document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")saveNow();});
+
+  // PWA: офлайн-режим (работает только на https-хостинге)
+  if("serviceWorker" in navigator && location.protocol!=="file:")
+    navigator.serviceWorker.register("sw.js");
+
+  loadStore();
+  saveNow();
+  render();
+})();
+</script>
+
+</body>
+</html>
